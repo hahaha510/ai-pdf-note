@@ -1,3 +1,4 @@
+//编辑器上方的工具
 import React from 'react'
 import { Bold, Italic, AlignRight, AlignLeft,
    AlignCenter,TextQuote,Code,Highlighter,
@@ -30,11 +31,11 @@ function EditorExtension ({editor}) {
       UnformattedAns&&UnformattedAns.forEach(item=>{
         AllUnformattedAns+=item.pageContent
       })
-      const PROMPT='For question :'+selectedText+" and with the given as answer:"
+      const PROMPT='For question :'+selectedText+" and with the given content as answer:"
       +'please give appropriate answer in HTML format. The answer content is:'+AllUnformattedAns
       const AiModelResult=await chatSession.sendMessage(PROMPT)
       console.log(AiModelResult.response.text())
-      const FinalAns=AiModelResult.response.text().replace('```','').replace('html','').replace(' ```','')
+      const FinalAns=AiModelResult.response.text().replace('```','').replace('html','').replace('```','')
       const AllText=editor.getHTML()
       editor.commands.setContent(AllText+'<p> <strong>AI Answer:</strong> '+FinalAns+'</p>')
       saveNotes({fileId:fileId,notes:editor.getHTML(),createdBy:user.userName||''})
