@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 简单的 commit message 格式检查
+commit_msg=$(cat "$1")
+
+# 检查是否符合基本格式（可选：更严格的检查）
+if ! echo "$commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore)(\(.+\))?: .{1,}$"; then
+  echo "❌ Commit message 格式错误!"
+  echo ""
+  echo "格式要求: <type>(<scope>): <subject>"
+  echo ""
+  echo "类型 (type):"
+  echo "  feat:     新功能"
+  echo "  fix:      修复bug"
+  echo "  docs:     文档修改"
+  echo "  style:    代码格式"
+  echo "  refactor: 重构"
+  echo "  perf:     性能优化"
+  echo "  test:     测试"
+  echo "  chore:    构建/工具"
+  echo ""
+  echo "示例:"
+  echo "  feat(notes): 添加无限滚动功能"
+  echo "  fix(theme): 修复主题切换问题"
+  echo "  docs: 更新README"
+  echo ""
+  exit 1
+fi
