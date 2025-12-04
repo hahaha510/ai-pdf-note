@@ -29,6 +29,7 @@ import {
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcuts";
 import { NoteCardSkeletonGrid } from "@/components/NoteCardSkeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useOfflineNotesList, useOfflineTags, useOfflineCategories } from "@/hooks/useOfflineQuery";
 
 export default function NotesPage() {
   const router = useRouter();
@@ -83,8 +84,11 @@ export default function NotesPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [searchInputRef]);
 
-  // 查询笔记
-  const notes = useQuery(api.onlineNotes.getUserNotes, user ? { userName: user.userName } : "skip");
+  // 查询笔记（支持离线）
+  const { data: notes, isFromCache: notesFromCache } = useOfflineNotesList(
+    api.onlineNotes.getUserNotes,
+    user ? { userName: user.userName } : "skip"
+  );
 
   // 搜索笔记
   const searchResults = useQuery(
@@ -92,11 +96,14 @@ export default function NotesPage() {
     user && searchQuery ? { userName: user.userName, searchQuery } : "skip"
   );
 
-  // 获取所有标签
-  const allTags = useQuery(api.onlineNotes.getAllTags, user ? { userName: user.userName } : "skip");
+  // 获取所有标签（支持离线）
+  const { data: allTags, isFromCache: tagsFromCache } = useOfflineTags(
+    api.onlineNotes.getAllTags,
+    user ? { userName: user.userName } : "skip"
+  );
 
-  // 获取所有分类
-  const allCategories = useQuery(
+  // 获取所有分类（支持离线）
+  const { data: allCategories, isFromCache: categoriesFromCache } = useOfflineCategories(
     api.onlineNotes.getAllCategories,
     user ? { userName: user.userName } : "skip"
   );
@@ -215,6 +222,13 @@ export default function NotesPage() {
 
   return (
     <div className="space-y-6">
+      {/* 离线模式提示 */}
+      {(notesFromCache || tagsFromCache || categoriesFromCache) && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg flex items-center gap-2">
+          <span className="text-sm font-medium">📵 离线模式 - 显示缓存数据</span>
+        </div>
+      )}
+
       {/* 搜索和操作栏 */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex-1 w-full sm:max-w-md relative">

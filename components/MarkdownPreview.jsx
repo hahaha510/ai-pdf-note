@@ -1,10 +1,10 @@
 "use client";
 import React, { Suspense, lazy } from "react";
 import { Card } from "@/components/ui/card";
+import remarkGfm from "remark-gfm";
 
 // 懒加载 ReactMarkdown 组件
 const ReactMarkdown = lazy(() => import("react-markdown"));
-const remarkGfm = lazy(() => import("remark-gfm"));
 
 export function MarkdownPreview({ content, className = "" }) {
   return (

@@ -8,7 +8,7 @@
  */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,8 @@ import { MarkdownPreview } from "@/components/MarkdownPreview";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { DraftRecoveryDialog } from "@/components/DraftRecoveryDialog";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { useOfflineNote } from "@/hooks/useOfflineQuery";
 import { saveDraft, getDraft, deleteDraft, addToSyncQueue } from "@/lib/offlineStorage";
 
 export default function NoteEditPage() {
@@ -99,8 +101,11 @@ export default function NoteEditPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPreview]);
 
-  // 获取笔记数据
-  const note = useQuery(api.onlineNotes.getNote, noteId ? { noteId } : "skip");
+  // 获取笔记数据（支持离线）
+  const { data: note, isFromCache: noteFromCache } = useOfflineNote(
+    api.onlineNotes.getNote,
+    noteId ? { noteId } : "skip"
+  );
 
   // 使用已定义的 mutation
   const updateNote = updateNoteMutation;
@@ -112,10 +117,20 @@ export default function NoteEditPage() {
     const checkDraft = async () => {
       const draft = await getDraft(noteId);
 
-      // 如果草稿存在且比服务器数据新，提示恢复
-      if (draft && draft.lastSaved > note.updatedAt) {
-        setDraftData(draft);
-        setShowDraftDialog(true);
+      // 如果草稿存在，检查是否需要恢复
+      if (draft) {
+        // 使用 updatedAt、_creationTime 或 cachedAt 作为服务器时间
+        const serverTime = note.updatedAt || note._creationTime || note.cachedAt || 0;
+
+        // 如果草稿比服务器数据新，或者没有服务器时间戳，提示恢复
+        if (!serverTime || draft.lastSaved > serverTime) {
+          setDraftData(draft);
+          setShowDraftDialog(true);
+        } else {
+          // 草稿比服务器数据旧，自动删除
+          await deleteDraft(noteId);
+          console.log("🗑️ 已删除过期草稿");
+        }
       }
     };
 
@@ -221,36 +236,32 @@ export default function NoteEditPage() {
     }
   }, [title, content, tags, category, noteId, user, isOnline, updateNote]);
 
-  // 自动保存（每2秒检查一次）
-  useEffect(() => {
-    if (!note || !user) return;
+  // 使用自动保存 Hook
+  const autoSaveData = {
+    title,
+    content,
+    tags,
+    category,
+  };
 
-    const autoSaveTimer = setTimeout(() => {
-      const hasChanges =
-        title !== note.title ||
-        content !== note.content ||
-        JSON.stringify(tags) !== JSON.stringify(note.tags) ||
-        category !== note.category;
-
-      if (hasChanges) {
-        // 自动保存草稿到本地
-        saveDraft(
+  const handleAutoSave = useCallback(
+    async (data) => {
+      if (noteId) {
+        await updateNote({
           noteId,
-          {
-            title,
-            content,
-            tags,
-            category,
-          },
-          user.userName
-        );
-
-        console.log("🔄 自动保存草稿");
+          ...data,
+        });
+        setLastSaved(Date.now());
+        setSaveMode("online");
       }
-    }, 2000);
+    },
+    [noteId, updateNote]
+  );
 
-    return () => clearTimeout(autoSaveTimer);
-  }, [title, content, tags, category, note, noteId, user]);
+  useAutoSave(autoSaveData, noteId, user?.userName, handleAutoSave, {
+    delay: 2000,
+    enabled: !!note && !!user,
+  });
 
   // 添加标签
   const handleAddTag = () => {
@@ -295,6 +306,13 @@ export default function NoteEditPage() {
         </Button>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {/* 离线模式提示 */}
+          {noteFromCache && (
+            <div className="px-3 py-1.5 rounded-md bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+              <span className="text-xs font-medium">📵 离线数据</span>
+            </div>
+          )}
+
           {/* 离线状态指示器 */}
           <OfflineIndicator
             userId={user.userName}
