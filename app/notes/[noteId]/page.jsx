@@ -14,21 +14,10 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import {
-  ArrowLeft,
-  Save,
-  Eye,
-  EyeOff,
-  Tag,
-  FolderOpen,
-  X,
-  Plus,
-  Keyboard,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, Save, Tag, FolderOpen, X, Plus, Keyboard, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcuts";
-import { MarkdownPreview } from "@/components/MarkdownPreview";
+import { MarkdownRichEditor } from "@/app/notes/_components/MarkdownRichEditor";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { DraftRecoveryDialog } from "@/components/DraftRecoveryDialog";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -53,7 +42,6 @@ export default function NoteEditPage() {
   const [tags, setTags] = useState([]);
   const [category, setCategory] = useState("");
   const [newTag, setNewTag] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
@@ -80,11 +68,6 @@ export default function NoteEditPage() {
         e.preventDefault();
         handleSave();
       }
-      // Ctrl/Cmd + P: 切换预览
-      if ((e.ctrlKey || e.metaKey) && e.key === "p") {
-        e.preventDefault();
-        setShowPreview(!showPreview);
-      }
       // Ctrl/Cmd + /: 显示快捷键帮助
       if ((e.ctrlKey || e.metaKey) && e.key === "/") {
         e.preventDefault();
@@ -99,7 +82,7 @@ export default function NoteEditPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPreview]);
+  }, []);
 
   // 获取笔记数据（支持离线）
   const { data: note, isFromCache: noteFromCache } = useOfflineNote(
@@ -360,25 +343,6 @@ export default function NoteEditPage() {
           </Button>
 
           <Button
-            variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center"
-            title={showPreview ? "隐藏预览 (Ctrl/⌘+P)" : "显示预览 (Ctrl/⌘+P)"}
-          >
-            {showPreview ? (
-              <>
-                <EyeOff className="w-4 h-4 mr-2" />
-                隐藏预览
-              </>
-            ) : (
-              <>
-                <Eye className="w-4 h-4 mr-2" />
-                显示预览
-              </>
-            )}
-          </Button>
-
-          <Button
             onClick={handleSave}
             disabled={isSaving}
             className="flex items-center"
@@ -458,77 +422,69 @@ export default function NoteEditPage() {
         </div>
       </div>
 
-      {/* 编辑器和预览 */}
-      <div className={`grid gap-6 ${showPreview ? "lg:grid-cols-2" : "grid-cols-1"}`}>
-        {/* 编辑器 */}
-        <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
-            <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-            编辑器
-          </h3>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="开始使用 Markdown 写作...&#10;&#10;**粗体** 或 __粗体__&#10;*斜体* 或 _斜体_&#10;# 一级标题&#10;## 二级标题&#10;- 列表项&#10;1. 数字列表&#10;[链接](url)&#10;`代码`&#10;```&#10;代码块&#10;```"
-            className="w-full min-h-[500px] p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 font-mono text-sm resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-          />
-        </Card>
-
-        {/* 预览 */}
-        {showPreview && (
-          <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
-              <span className="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
-              预览
-            </h3>
-            <div className="min-h-[500px] overflow-auto">
-              <MarkdownPreview content={content} />
-            </div>
-          </Card>
-        )}
+      {/* 富文本编辑器（支持 Markdown） */}
+      <div className="mt-6">
+        <MarkdownRichEditor
+          initialContent={content}
+          onUpdate={setContent}
+          placeholder="开始写作... 支持工具栏和 Markdown 语法（输入 **粗体** 自动转换）"
+        />
       </div>
 
-      {/* Markdown 帮助 */}
+      {/* 编辑器使用说明 */}
       <Card className="mt-6 p-6 bg-gray-50 dark:bg-gray-800">
         <h3 className="text-sm font-semibold mb-3 text-gray-700 dark:text-gray-300">
-          Markdown 语法
+          📝 编辑器使用说明
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs text-gray-600 dark:text-gray-400">
+        <div className="space-y-3 text-xs text-gray-600 dark:text-gray-400">
           <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">**粗体**</code>
-            <span className="ml-2">粗体文本</span>
+            <strong className="text-gray-900 dark:text-gray-100">两种编辑方式：</strong>
+            <p>1. 使用工具栏按钮格式化文本（点击即可）</p>
+            <p>2. 直接输入 Markdown 语法（实时转换）</p>
           </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">*斜体*</code>
-            <span className="ml-2">斜体文本</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded"># 标题</code>
-            <span className="ml-2">一级标题</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">- 列表</code>
-            <span className="ml-2">项目列表</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">1. 列表</code>
-            <span className="ml-2">数字列表</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">[链接](url)</code>
-            <span className="ml-2">超链接</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">`代码`</code>
-            <span className="ml-2">行内代码</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">```代码```</code>
-            <span className="ml-2">代码块</span>
-          </div>
-          <div>
-            <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">&gt; 引用</code>
-            <span className="ml-2">引用块</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">**粗体**</code>
+              <span className="ml-2">
+                → <strong>粗体</strong>
+              </span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">*斜体*</code>
+              <span className="ml-2">
+                → <em>斜体</em>
+              </span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">~~删除~~</code>
+              <span className="ml-2">
+                → <del>删除</del>
+              </span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded"># 标题</code>
+              <span className="ml-2">→ 一级标题</span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">- 列表</code>
+              <span className="ml-2">→ 无序列表</span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">1. 列表</code>
+              <span className="ml-2">→ 有序列表</span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">&gt; 引用</code>
+              <span className="ml-2">→ 引用块</span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">```代码```</code>
+              <span className="ml-2">→ 代码块</span>
+            </div>
+            <div>
+              <code className="bg-white dark:bg-gray-900 px-2 py-1 rounded">`代码`</code>
+              <span className="ml-2">→ 行内代码</span>
+            </div>
           </div>
         </div>
       </Card>

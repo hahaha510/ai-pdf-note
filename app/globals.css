@@ -31,8 +31,6 @@ a {
   }
 }
 
-
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -89,8 +87,6 @@ a {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
@@ -120,44 +116,45 @@ pre {
   color: var(--white);
   margin: 1.5rem 0;
   padding: 0.75rem 1rem;
-
 }
 h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    line-height: 1.1;
-    text-wrap: pretty;
-  }
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.1;
+  text-wrap: pretty;
+}
 
-  h1,
-  h2 {
-    margin-bottom: 1.5rem;
-  }
+h1,
+h2 {
+  margin-bottom: 1.5rem;
+}
 
-  h1 {
-    font-size: 1.4rem;
-  }
+h1 {
+  font-size: 1.4rem;
+}
 
-  h2 {
-    font-size: 1.2rem;
-  }
+h2 {
+  font-size: 1.2rem;
+}
 
-  h3 {
-    font-size: 1.1rem;
-  }
+h3 {
+  font-size: 1.1rem;
+}
 
-  h4,
-  h5,
-  h6 {
-    font-size: 1rem;
-  }
+h4,
+h5,
+h6 {
+  font-size: 1rem;
+}
 
-  /* 上传加载中旋转动画*/
+/* 上传加载中旋转动画*/
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-spin {

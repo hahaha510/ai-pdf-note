@@ -1,20 +1,16 @@
-"use client"
-import React, { createContext, useContext } from 'react'
+"use client";
+import React, { createContext, useContext } from "react";
 
-const EditorContext = createContext()
+const EditorContext = createContext();
 
 export const useEditorContext = () => {
-  const context = useContext(EditorContext)
+  const context = useContext(EditorContext);
   if (!context) {
-    throw new Error('useEditorContext must be used within an EditorProvider')
+    throw new Error("useEditorContext must be used within an EditorProvider");
   }
-  return context
-}
+  return context;
+};
 
-export const EditorProvider = ({ children, editor,setEditor }) => {
-  return (
-    <EditorContext.Provider value={{ editor,setEditor }}>
-      {children}
-    </EditorContext.Provider>
-  )
-} 
+export const EditorProvider = ({ children, editor, setEditor }) => {
+  return <EditorContext.Provider value={{ editor, setEditor }}>{children}</EditorContext.Provider>;
+};
