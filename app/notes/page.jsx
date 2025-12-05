@@ -26,7 +26,7 @@ import {
   Keyboard,
   Loader2,
 } from "lucide-react";
-import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcuts";
+import { KeyboardShortcutsDialog } from "@/app/notes/_components/KeyboardShortcuts";
 import { NoteCardSkeletonGrid } from "@/components/NoteCardSkeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useOfflineNotesList, useOfflineTags, useOfflineCategories } from "@/hooks/useOfflineQuery";
