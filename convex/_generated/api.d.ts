@@ -17,8 +17,8 @@ import type * as fileStorage from "../fileStorage.js";
 import type * as langchain_db from "../langchain/db.js";
 import type * as myAction from "../myAction.js";
 import type * as notes from "../notes.js";
-import type * as onlineNotes from "../onlineNotes.js";
 import type * as user from "../user.js";
+import type * as workspaceNotes from "../workspaceNotes.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -33,8 +33,8 @@ declare const fullApi: ApiFromModules<{
   "langchain/db": typeof langchain_db;
   myAction: typeof myAction;
   notes: typeof notes;
-  onlineNotes: typeof onlineNotes;
   user: typeof user;
+  workspaceNotes: typeof workspaceNotes;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

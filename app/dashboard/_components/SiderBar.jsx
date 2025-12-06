@@ -35,43 +35,23 @@ function SiderBar() {
         <Link href="/dashboard">
           <div
             className={`flex gap-2 items-center p-3 mt-5
-      hover:bg-slate-100 rounded-lg cursor-pointer 
+      hover:bg-slate-100 rounded-lg cursor-pointer
       ${path === "/dashboard" ? "bg-slate-200" : ""}
       `}
-            style={{ position: "relative" }}
           >
-            <Layout />
-            <h2
-              style={{
-                position: "absolute",
-                top: "13px",
-                left: "45%",
-                transform: "translateX(-50%)",
-              }}
-            >
-              Workspace
-            </h2>
+            <Layout className="w-5 h-5" />
+            <h2>Workspace</h2>
           </div>
         </Link>
         <Link href="/dashboard/upgrade">
           <div
-            className={`flex gap-2 items-center p-3 mt-5
-      hover:bg-slate-100 rounded-lg cursor-pointer 
+            className={`flex gap-2 items-center p-3 mt-2
+      hover:bg-slate-100 rounded-lg cursor-pointer
       ${path === "/dashboard/upgrade" ? "bg-slate-200" : ""}
       `}
-            style={{ position: "relative" }}
           >
-            <Shield className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <h2
-              style={{
-                position: "absolute",
-                top: "13px",
-                left: "40%",
-                transform: "translateX(-50%)",
-              }}
-            >
-              Upgrade
-            </h2>
+            <Shield className="w-5 h-5 flex-shrink-0" />
+            <h2>Upgrade</h2>
           </div>
         </Link>
       </div>

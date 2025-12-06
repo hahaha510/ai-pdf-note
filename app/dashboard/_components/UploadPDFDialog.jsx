@@ -24,6 +24,7 @@ function UploadPDFDialog({ children, isMaxFile }) {
   const AddFileEntry = useMutation(api.fileStorage.AddFileEntryToDb);
   const getFileUrl = useMutation(api.fileStorage.getFileUrl);
   const embeddDocuments = useAction(api.myAction.ingest);
+  const createPdfNote = useMutation(api.workspaceNotes.createPdfNote);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -61,15 +62,28 @@ function UploadPDFDialog({ children, isMaxFile }) {
     console.log("storageId", storageId);
     const fileId = uuid4();
     const fileUrl = await getFileUrl({ storageId: storageId });
-    //到表中添加文件信息
+    const title = fileName ?? "Untitled File";
+
+    //到表中添加文件信息（兼容旧表）
     const resp = await AddFileEntry({
       fileId: fileId,
       storageId: storageId,
-      fileName: fileName ?? "Untitled File",
+      fileName: title,
       fileUrl: fileUrl,
       createdBy: user?.userName,
     });
     console.log("resp", resp);
+
+    // 同时保存到新的 workspaceNotes 表
+    await createPdfNote({
+      noteId: fileId,
+      title: title,
+      fileId: fileId,
+      storageId: storageId,
+      fileUrl: fileUrl,
+      createdBy: user?.userName,
+    });
+
     const ApiResp = await axios.get("/api/pdf-loader?pdfUrl=" + fileUrl);
     console.log("ApiResp", ApiResp.data.result);
     const embeddResult = await embeddDocuments({
