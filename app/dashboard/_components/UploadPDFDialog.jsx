@@ -100,7 +100,7 @@ function UploadPDFDialog({ children, isMaxFile }) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="w-full " disabled={isMaxFile} onClick={() => setOpen(true)}>
-          + Upload PDF File
+          上传PDF文件
         </Button>
       </DialogTrigger>
       <DialogContent>

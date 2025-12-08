@@ -27,10 +27,15 @@ function SiderBar() {
   });
   return (
     <div className="h-screen shadow-md p-7">
-      <Image src="/logo.svg" alt="logo" width={170} height={120} />
+      <div className="flex items-center gap-3 mb-6">
+        <Image src="/logo.jpg" alt="logo" width={50} height={50} className="rounded-lg" />
+        <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          AI Notes
+        </span>
+      </div>
       <div className="mt-10">
         <UploadPDFDialog isMaxFile={fileList?.length >= 5 && !isUpgrade ? true : false}>
-          <Button className="w-full ">+ Upload PDF</Button>
+          <Button className="w-full ">上传PDF文件</Button>
         </UploadPDFDialog>
         <Link href="/dashboard">
           <div
@@ -40,7 +45,7 @@ function SiderBar() {
       `}
           >
             <Layout className="w-5 h-5" />
-            <h2>Workspace</h2>
+            <h2 className="m-0 leading-none text-base font-medium">工作区</h2>
           </div>
         </Link>
         <Link href="/dashboard/upgrade">
@@ -51,7 +56,7 @@ function SiderBar() {
       `}
           >
             <Shield className="w-5 h-5 flex-shrink-0" />
-            <h2>Upgrade</h2>
+            <h2 className="m-0 leading-none text-base font-medium">升级计划</h2>
           </div>
         </Link>
       </div>

@@ -125,6 +125,7 @@ export const getNote = query({
       .query("workspaceNotes")
       .filter((q) => q.eq(q.field("noteId"), args.noteId))
       .first();
+
     return note;
   },
 });

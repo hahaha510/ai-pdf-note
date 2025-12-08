@@ -61,4 +61,50 @@ export default defineSchema({
       searchField: "plainContent",
       filterFields: ["createdBy", "type"],
     }),
+
+  // 分享链接表
+  shares: defineTable({
+    noteId: v.string(), // 笔记 ID
+    shareToken: v.string(), // 分享 token（8位随机字符）
+    createdBy: v.string(), // 创建者
+    permission: v.string(), // 权限："view" | "edit"
+    shareType: v.string(), // 分享类型："public_link"
+    accessControl: v.string(), // 访问控制："any_logged_in_user"
+    isActive: v.boolean(), // 是否激活
+    createdAt: v.number(), // 创建时间
+    expiresAt: v.optional(v.number()), // 过期时间（可选）
+    viewCount: v.number(), // 访问次数
+    lastAccessedAt: v.optional(v.number()), // 最后访问时间
+  })
+    .index("by_note", ["noteId"])
+    .index("by_token", ["shareToken"]),
+
+  // 文档状态表（Y.js 状态）
+  documentStates: defineTable({
+    noteId: v.string(), // 笔记 ID
+    yDocState: v.string(), // Y.js 文档状态（base64）
+    lastUpdate: v.string(), // 最后一次更新（base64）
+    updatedAt: v.number(), // 更新时间
+    updatedBy: v.string(), // 更新者
+  }).index("by_note", ["noteId"]),
+
+  // 文档更新记录表
+  documentUpdates: defineTable({
+    noteId: v.string(), // 笔记 ID
+    update: v.string(), // Y.js 更新（base64）
+    userId: v.string(), // 用户 ID
+    userName: v.string(), // 用户名
+    timestamp: v.number(), // 时间戳
+  }).index("by_note_time", ["noteId", "timestamp"]),
+
+  // 用户在线状态表
+  userPresence: defineTable({
+    noteId: v.string(), // 笔记 ID
+    userId: v.string(), // 用户 ID
+    userName: v.string(), // 用户名
+    color: v.string(), // 光标颜色
+    lastSeen: v.number(), // 最后活跃时间
+  })
+    .index("by_note", ["noteId"])
+    .index("by_user", ["userId", "noteId"]),
 });

@@ -17,8 +17,8 @@ export function FilterDialog({
   allCategories,
   selectedTag,
   selectedCategory,
-  onSelectTag,
-  onSelectCategory,
+  onTagSelect,
+  onCategorySelect,
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,7 +40,7 @@ export function FilterDialog({
                   <button
                     key={tag}
                     onClick={() => {
-                      onSelectTag(tag === selectedTag ? null : tag);
+                      onTagSelect(tag === selectedTag ? null : tag);
                       onOpenChange(false);
                     }}
                     className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
@@ -70,7 +70,7 @@ export function FilterDialog({
                   <button
                     key={category}
                     onClick={() => {
-                      onSelectCategory(category === selectedCategory ? null : category);
+                      onCategorySelect(category === selectedCategory ? null : category);
                       onOpenChange(false);
                     }}
                     className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
@@ -95,8 +95,8 @@ export function FilterDialog({
           <Button
             variant="secondary"
             onClick={() => {
-              onSelectTag(null);
-              onSelectCategory(null);
+              onTagSelect(null);
+              onCategorySelect(null);
             }}
           >
             Clear All Filters

@@ -11,10 +11,10 @@ import { Plus, Search, FileText, X, Tag, Filter, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CreateNoteDialog } from "./_components/CreateNoteDialog";
 import { FilterDialog } from "./_components/FilterDialog";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { AISearch } from "@/components/AISearch";
 import { AIFeatures } from "@/components/AIFeatures";
+import { NoteCardSkeleton } from "@/components/NoteCardSkeleton";
 import { offlineStorage } from "@/lib/offlineStorage";
 import { syncManager } from "@/lib/syncManager";
 import { toast } from "sonner";
@@ -218,10 +218,9 @@ function Dashboard() {
     <div className="space-y-6">
       {/* 顶部标题和操作栏 */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-3xl font-medium">Workspace</h2>
+        <h2 className="text-3xl font-medium">工作区</h2>
 
         <div className="flex gap-2 items-center">
-          <ThemeToggle />
           {/* AI 功能按钮 */}
           <AIFeatures notes={displayNotes || []} />
           <Button onClick={() => setShowNewNoteDialog(true)}>
@@ -361,10 +360,13 @@ function Dashboard() {
 
       {/* 笔记列表 - 卡片式展示 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {displayNotes && displayNotes.length > 0 ? (
+        {!allNotes && !searchQuery && !selectedTag && !selectedCategory ? (
+          // 加载中显示骨架屏
+          [1, 2, 3, 4, 5, 6].map((item) => <NoteCardSkeleton key={item} />)
+        ) : displayNotes && displayNotes.length > 0 ? (
           displayNotes.map((note, index) => (
             <Link href={`/workspace/${note.noteId}`} key={index}>
-              <div className="relative flex p-5 shadow-md rounded-md flex-col border cursor-pointer hover:shadow-lg transition-all bg-white dark:bg-gray-800 h-[220px] group">
+              <div className="relative flex p-5 shadow-md rounded-md flex-col border cursor-pointer hover:shadow-lg transition-all bg-white dark:bg-gray-800 h-[260px] group">
                 {/* 删除按钮 - 悬停时显示 */}
                 <button
                   onClick={(e) => handleDelete(note.noteId, note.title, e)}
@@ -403,9 +405,9 @@ function Dashboard() {
                 </div>
 
                 {/* 摘要 - 固定高度区域 */}
-                <div className="flex-1 overflow-hidden mb-3">
+                <div className="flex-1 overflow-hidden mb-3 min-h-[60px]">
                   {note.excerpt && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed">
                       {note.excerpt}
                     </p>
                   )}
@@ -437,10 +439,6 @@ function Dashboard() {
                 </div>
               </div>
             </Link>
-          ))
-        ) : displayNotes === null ? (
-          [1, 2, 3, 4, 5, 6, 7].map((item, index) => (
-            <div key={index} className="bg-slate-200 rounded-md h-[200px] animate-pulse"></div>
           ))
         ) : (
           <div className="col-span-full text-center py-20">
