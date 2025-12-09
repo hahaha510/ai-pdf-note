@@ -54,9 +54,26 @@ export function CollaborativeEditor({ fileId, user, permission = "edit", initial
   useEffect(() => {
     if (!fileId || !user || !editor) return;
 
+    // 获取 WebSocket URL
+    const getWebSocketUrl = () => {
+      // 优先使用环境变量
+      if (process.env.NEXT_PUBLIC_WEBSOCKET_URL) {
+        return process.env.NEXT_PUBLIC_WEBSOCKET_URL;
+      }
+
+      // 生产环境（Railway 或其他部署）
+      if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        return `${protocol}//${window.location.host}`;
+      }
+
+      // 本地开发
+      return "ws://localhost:1234";
+    };
+
     // 创建 Hocuspocus Provider
     const hocuspocusProvider = new HocuspocusProvider({
-      url: "ws://localhost:1234",
+      url: getWebSocketUrl(),
       name: fileId,
       document: ydoc,
       token: user.email, // 用于认证

@@ -99,13 +99,14 @@ const server = new Server({
 });
 
 // 启动服务器
-const PORT = 1234;
+const PORT = process.env.PORT || 1234;
 const ADDRESS = "0.0.0.0";
 
 server.listen(PORT, ADDRESS).then(() => {
   console.log("🚀 WebSocket 服务器启动成功！");
   console.log(`📡 监听端口: ${PORT}`);
   console.log(`🔗 连接地址: ws://localhost:${PORT}`);
+  console.log(`🌐 环境: ${process.env.NODE_ENV || "development"}`);
 });
 
 // 优雅关闭
