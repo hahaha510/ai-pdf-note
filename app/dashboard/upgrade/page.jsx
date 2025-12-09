@@ -18,17 +18,17 @@ function UpgradePlans() {
       const res = await updateUserUpgradeMutation({ userEmail: user.email });
       console.log("res", res);
       if (res === "success") {
-        toast.success("Upgrade successful");
+        toast.success("升级成功");
       } else {
-        toast.error("Upgrade failed");
+        toast.error("升级失败");
       }
     }
   };
 
   return (
     <div className="p-8">
-      <h2 className="font-medium text-3xl mb-2">Upgrade Plans</h2>
-      <p className="text-gray-600 mb-8">Update your plan to upload multiple pdf to take notes</p>
+      <h2 className="font-medium text-3xl mb-2">升级计划</h2>
+      <p className="text-gray-600 mb-8">升级您的计划以上传更多 PDF 文件并记笔记</p>
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:items-start md:gap-8">
           {/* Free Plan */}
@@ -42,13 +42,13 @@ function UpgradePlans() {
           >
             <div className="text-center">
               <h2 className="text-lg font-medium text-gray-900">
-                Free
-                <span className="sr-only">Plan</span>
+                免费版
+                <span className="sr-only">计划</span>
               </h2>
 
               <p className="mt-2 sm:mt-4">
                 <strong className="text-3xl font-bold text-gray-900 sm:text-4xl">0$</strong>
-                <span className="text-sm font-medium text-gray-700">/month</span>
+                <span className="text-sm font-medium text-gray-700">/月</span>
               </p>
             </div>
 
@@ -64,7 +64,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">5 PDF Upload</span>
+                <span className="text-gray-700">上传 5 个 PDF</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -78,7 +78,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Unlimited Notes Taking</span>
+                <span className="text-gray-700">无限笔记</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -92,7 +92,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Email support</span>
+                <span className="text-gray-700">邮件支持</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -106,7 +106,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Help center access</span>
+                <span className="text-gray-700">帮助中心访问</span>
               </li>
             </ul>
 
@@ -118,7 +118,7 @@ function UpgradePlans() {
               }`}
               onClick={() => handlePlanSelect("free")}
             >
-              {selectedPlan === "free" ? "Selected" : "Current Plan"}
+              {selectedPlan === "free" ? "已选择" : "当前计划"}
             </button>
           </div>
 
@@ -133,13 +133,13 @@ function UpgradePlans() {
           >
             <div className="text-center">
               <h2 className="text-lg font-medium text-gray-900">
-                Unlimited
-                <span className="sr-only">Plan</span>
+                无限版
+                <span className="sr-only">计划</span>
               </h2>
 
               <p className="mt-2 sm:mt-4">
                 <strong className="text-3xl font-bold text-gray-900 sm:text-4xl">9.99$</strong>
-                <span className="text-sm font-medium text-gray-700">/One Time</span>
+                <span className="text-sm font-medium text-gray-700">/一次性</span>
               </p>
             </div>
 
@@ -155,7 +155,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Unlimited PDF Upload</span>
+                <span className="text-gray-700">无限 PDF 上传</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -169,7 +169,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Unlimited Notes Taking</span>
+                <span className="text-gray-700">无限笔记</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -183,7 +183,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Email support</span>
+                <span className="text-gray-700">邮件支持</span>
               </li>
 
               <li className="flex items-center gap-3">
@@ -197,7 +197,7 @@ function UpgradePlans() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
-                <span className="text-gray-700">Help center access</span>
+                <span className="text-gray-700">帮助中心访问</span>
               </li>
             </ul>
 
@@ -209,7 +209,7 @@ function UpgradePlans() {
               }`}
               onClick={() => handlePlanSelect("unlimited")}
             >
-              {selectedPlan === "unlimited" ? "Selected" : "Get Started"}
+              {selectedPlan === "unlimited" ? "已选择" : "开始使用"}
             </button>
           </div>
         </div>

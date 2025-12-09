@@ -10,13 +10,19 @@ export default defineSchema({
     password: v.string(),
     upgrade: v.boolean(),
   }),
+  // PDF 文件表 - 存储文件元数据
   pdfFiles: defineTable({
-    fileId: v.string(),
-    storageId: v.string(),
-    fileName: v.string(),
-    fileUrl: v.string(),
-    createdBy: v.string(),
-  }),
+    fileId: v.string(), // 唯一文件标识
+    storageId: v.string(), // Convex 存储 ID
+    fileName: v.string(), // 原始文件名
+    fileUrl: v.string(), // 文件访问 URL
+    createdBy: v.string(), // 上传者
+    fileSize: v.optional(v.number()), // 文件大小（字节）
+    mimeType: v.optional(v.string()), // 文件类型
+    uploadedAt: v.number(), // 上传时间
+  })
+    .index("by_user", ["createdBy"])
+    .index("by_fileId", ["fileId"]),
   documents: defineTable({
     embedding: v.array(v.number()),
     text: v.string(),
@@ -25,20 +31,20 @@ export default defineSchema({
     vectorField: "embedding",
     dimensions: 768,
   }),
-  // AI PDF Note 工作区笔记表 - 支持普通笔记和 PDF 笔记
+  // 笔记表 - 只存储笔记内容，引用 PDF 文件
   workspaceNotes: defineTable({
-    noteId: v.string(), // 笔记 ID
-    title: v.string(), // 标题
-    type: v.string(), // "pdf" 或 "note"
-    content: v.string(), // 笔记内容（HTML格式）
-    plainContent: v.optional(v.string()), // 纯文本内容（用于搜索）
-    excerpt: v.optional(v.string()), // 笔记摘要（用于列表展示）
+    noteId: v.string(), // 笔记唯一 ID
+    title: v.string(), // 笔记标题
+    type: v.string(), // "pdf" | "note"
+    content: v.string(), // 笔记内容（HTML）
+    plainContent: v.optional(v.string()), // 纯文本（搜索用）
+    excerpt: v.optional(v.string()), // 摘要（列表展示）
     tags: v.array(v.string()), // 标签
     category: v.optional(v.string()), // 分类
-    // PDF 相关字段
-    fileId: v.optional(v.string()), // PDF 文件 ID
-    storageId: v.optional(v.string()), // 存储 ID
-    fileUrl: v.optional(v.string()), // PDF URL
+
+    // PDF 笔记时引用文件
+    pdfFileId: v.optional(v.string()), // 关联到 pdfFiles.fileId
+
     // 通用字段
     createdBy: v.string(),
     createdAt: v.number(),
@@ -48,6 +54,7 @@ export default defineSchema({
     .index("by_type", ["type"])
     .index("by_category", ["category"])
     .index("by_user_and_type", ["createdBy", "type"])
+    .index("by_pdf_file", ["pdfFileId"]) // 新增：通过 PDF 文件 ID 查询
     .searchIndex("search_title", {
       searchField: "title",
       filterFields: ["createdBy", "type", "category"],

@@ -27,14 +27,12 @@ export const createNote = mutation({
   },
 });
 
-// 创建 PDF 笔记（迁移现有 PDF）
+// 创建 PDF 笔记
 export const createPdfNote = mutation({
   args: {
     noteId: v.string(),
     title: v.string(),
-    fileId: v.string(),
-    storageId: v.string(),
-    fileUrl: v.string(),
+    pdfFileId: v.string(), // 只需要传入 PDF 文件 ID
     createdBy: v.string(),
   },
   handler: async (ctx, args) => {
@@ -45,9 +43,7 @@ export const createPdfNote = mutation({
       type: "pdf",
       content: "",
       tags: [],
-      fileId: args.fileId,
-      storageId: args.storageId,
-      fileUrl: args.fileUrl,
+      pdfFileId: args.pdfFileId, // 引用关系
       createdBy: args.createdBy,
       createdAt: now,
       updatedAt: now,
@@ -95,7 +91,7 @@ export const updateNote = mutation({
   },
 });
 
-// 删除笔记
+// 删除笔记（优化版 - 级联删除）
 export const deleteNote = mutation({
   args: {
     noteId: v.string(),
@@ -113,11 +109,11 @@ export const deleteNote = mutation({
     // 删除 workspaceNotes 表的记录
     await ctx.db.delete(note._id);
 
-    // 如果是 PDF 笔记，同时删除 pdfFiles 表的记录
-    if (note.type === "pdf" && note.fileId) {
+    // 如果是 PDF 笔记，同时删除 PDF 文件记录
+    if (note.type === "pdf" && note.pdfFileId) {
       const pdfFile = await ctx.db
         .query("pdfFiles")
-        .filter((q) => q.eq(q.field("fileId"), note.fileId))
+        .filter((q) => q.eq(q.field("fileId"), note.pdfFileId))
         .first();
 
       if (pdfFile) {
@@ -139,6 +135,36 @@ export const getNote = query({
       .query("workspaceNotes")
       .filter((q) => q.eq(q.field("noteId"), args.noteId))
       .first();
+
+    return note;
+  },
+});
+
+// 获取单个笔记（包含 PDF 文件信息）
+export const getNoteWithPdfInfo = query({
+  args: {
+    noteId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const note = await ctx.db
+      .query("workspaceNotes")
+      .filter((q) => q.eq(q.field("noteId"), args.noteId))
+      .first();
+
+    if (!note) return null;
+
+    // 如果是 PDF 笔记，获取文件信息
+    if (note.type === "pdf" && note.pdfFileId) {
+      const pdfFile = await ctx.db
+        .query("pdfFiles")
+        .filter((q) => q.eq(q.field("fileId"), note.pdfFileId))
+        .first();
+
+      return {
+        ...note,
+        pdfFile, // 添加文件信息
+      };
+    }
 
     return note;
   },

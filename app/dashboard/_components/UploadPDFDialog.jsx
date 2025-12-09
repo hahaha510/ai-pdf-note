@@ -19,7 +19,7 @@ import axios from "axios";
 import { useAction } from "convex/react";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
-function UploadPDFDialog({ children, isMaxFile }) {
+function UploadPDFDialog({ isMaxFile }) {
   const generateUploadUrl = useMutation(api.fileStorage.generateUploadUrl);
   const AddFileEntry = useMutation(api.fileStorage.AddFileEntryToDb);
   const getFileUrl = useMutation(api.fileStorage.getFileUrl);
@@ -51,49 +51,61 @@ function UploadPDFDialog({ children, isMaxFile }) {
 
   //pdf上传到convex数据库
   const onUpload = async () => {
-    setLoading(true);
-    const postUrl = await generateUploadUrl();
-    const result = await fetch(postUrl, {
-      method: "POST",
-      headers: { "Content-Type": file?.type },
-      body: file,
-    });
-    const { storageId } = await result.json();
-    console.log("storageId", storageId);
-    const fileId = uuid4();
-    const fileUrl = await getFileUrl({ storageId: storageId });
-    const title = fileName ?? "Untitled File";
+    if (!file) {
+      toast.error("请先选择文件");
+      return;
+    }
 
-    //到表中添加文件信息（兼容旧表）
-    const resp = await AddFileEntry({
-      fileId: fileId,
-      storageId: storageId,
-      fileName: title,
-      fileUrl: fileUrl,
-      createdBy: user?.userName,
-    });
-    console.log("resp", resp);
+    try {
+      setLoading(true);
+      const postUrl = await generateUploadUrl();
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file?.type },
+        body: file,
+      });
+      const { storageId } = await result.json();
+      console.log("storageId", storageId);
+      const fileId = uuid4();
+      const fileUrl = await getFileUrl({ storageId: storageId });
+      const title = fileName ?? "未命名文件";
 
-    // 同时保存到新的 workspaceNotes 表
-    await createPdfNote({
-      noteId: fileId,
-      title: title,
-      fileId: fileId,
-      storageId: storageId,
-      fileUrl: fileUrl,
-      createdBy: user?.userName,
-    });
+      // 1. 创建 PDF 文件记录
+      const resp = await AddFileEntry({
+        fileId: fileId,
+        storageId: storageId,
+        fileName: title,
+        fileUrl: fileUrl,
+        createdBy: user?.userName,
+        fileSize: file?.size,
+        mimeType: file?.type,
+        uploadedAt: Date.now(),
+      });
+      console.log("resp", resp);
 
-    const ApiResp = await axios.get("/api/pdf-loader?pdfUrl=" + fileUrl);
-    console.log("ApiResp", ApiResp.data.result);
-    const embeddResult = await embeddDocuments({
-      splitText: ApiResp.data.result,
-      fileId: fileId,
-    });
-    console.log("embeddResult", embeddResult);
-    setLoading(false);
-    setOpen(false);
-    toast("File uploaded successfully");
+      // 2. 创建 PDF 笔记（引用文件）
+      await createPdfNote({
+        noteId: fileId,
+        title: title,
+        pdfFileId: fileId, // 引用关系
+        createdBy: user?.userName,
+      });
+
+      const ApiResp = await axios.get("/api/pdf-loader?pdfUrl=" + fileUrl);
+      console.log("ApiResp", ApiResp.data.result);
+      const embeddResult = await embeddDocuments({
+        splitText: ApiResp.data.result,
+        fileId: fileId,
+      });
+      console.log("embeddResult", embeddResult);
+      setLoading(false);
+      handleOpenChange(false);
+      toast("文件上传成功");
+    } catch (error) {
+      console.error("上传失败:", error);
+      setLoading(false);
+      toast.error("文件上传失败，请重试");
+    }
   };
 
   return (
@@ -105,10 +117,10 @@ function UploadPDFDialog({ children, isMaxFile }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Upload Pdf File</DialogTitle>
+          <DialogTitle>上传 PDF 文件</DialogTitle>
           <DialogDescription asChild>
             <div>
-              <h2 className="mt-5">Select a file to Upload</h2>
+              <h2 className="mt-5">选择要上传的文件</h2>
               <div className="gap-2 p-3 rounded-md border">
                 <input
                   type="file"
@@ -117,9 +129,9 @@ function UploadPDFDialog({ children, isMaxFile }) {
                 ></input>
               </div>
               <div className="mt-2">
-                <label>File Name *</label>
+                <label>文件名称 *</label>
                 <Input
-                  placeholder="File Name"
+                  placeholder="请输入文件名称"
                   onChange={(event) => setFileName(event.target.value)}
                 ></Input>
               </div>
@@ -129,11 +141,11 @@ function UploadPDFDialog({ children, isMaxFile }) {
         <DialogFooter className="sm:justify-end">
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Close
+              关闭
             </Button>
           </DialogClose>
           <Button onClick={onUpload} disabled={loading}>
-            {loading ? <Loader2Icon className="animate-spin"></Loader2Icon> : "Upload"}
+            {loading ? <Loader2Icon className="animate-spin"></Loader2Icon> : "上传"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -24,15 +24,15 @@ export function FilterDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Filter Notes</DialogTitle>
-          <DialogDescription>Filter notes by tags or categories</DialogDescription>
+          <DialogTitle>筛选笔记</DialogTitle>
+          <DialogDescription>按标签或分类筛选笔记</DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
           {/* 标签筛选 */}
           <div>
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              Tags
+              标签
             </h3>
             <div className="flex flex-wrap gap-2">
               {allTags && allTags.length > 0 ? (
@@ -53,7 +53,7 @@ export function FilterDialog({
                   </button>
                 ))
               ) : (
-                <p className="text-sm text-gray-500">No tags available</p>
+                <p className="text-sm text-gray-500">暂无可用标签</p>
               )}
             </div>
           </div>
@@ -62,7 +62,7 @@ export function FilterDialog({
           <div>
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-              Categories
+              分类
             </h3>
             <div className="flex flex-wrap gap-2">
               {allCategories && allCategories.length > 0 ? (
@@ -83,14 +83,14 @@ export function FilterDialog({
                   </button>
                 ))
               ) : (
-                <p className="text-sm text-gray-500">No categories available</p>
+                <p className="text-sm text-gray-500">暂无可用分类</p>
               )}
             </div>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            关闭
           </Button>
           <Button
             variant="secondary"
@@ -99,7 +99,7 @@ export function FilterDialog({
               onCategorySelect(null);
             }}
           >
-            Clear All Filters
+            清除所有筛选
           </Button>
         </DialogFooter>
       </DialogContent>

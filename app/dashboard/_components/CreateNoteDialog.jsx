@@ -43,13 +43,13 @@ export function CreateNoteDialog({ open, onOpenChange, user }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Note</DialogTitle>
-          <DialogDescription>Enter a title for your new note</DialogDescription>
+          <DialogTitle>创建新笔记</DialogTitle>
+          <DialogDescription>请输入笔记标题</DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <Input
             type="text"
-            placeholder="Note title..."
+            placeholder="笔记标题..."
             value={noteTitle}
             onChange={(e) => setNoteTitle(e.target.value)}
             onKeyPress={(e) => {
@@ -62,10 +62,10 @@ export function CreateNoteDialog({ open, onOpenChange, user }) {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            取消
           </Button>
           <Button onClick={handleCreateNote} disabled={!noteTitle.trim()}>
-            Create
+            创建
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -33,16 +33,13 @@ function Workspace() {
     }
   }, []);
 
-  // 从新的 workspaceNotes 表获取笔记信息
-  const noteInfo = useQuery(api.workspaceNotes.getNote, fileId ? { noteId: fileId } : "skip");
-
-  // 兼容性：如果新表中没有，尝试从旧的 pdfFiles 表获取（用于迁移）
-  const legacyFileInfo = useQuery(
-    api.fileStorage.getFileRecord,
-    !noteInfo && fileId ? { fileId } : "skip"
+  // 获取笔记信息（包含 PDF 文件信息）
+  const noteInfo = useQuery(
+    api.workspaceNotes.getNoteWithPdfInfo,
+    fileId ? { noteId: fileId } : "skip"
   );
 
-  const currentNote = noteInfo || legacyFileInfo;
+  const currentNote = noteInfo;
 
   // 检查权限
   useEffect(() => {
@@ -64,7 +61,7 @@ function Workspace() {
       }
     }
   }, [shareToken, shareInfo, user, currentNote, updateShareAccess]);
-  const isPdfNote = currentNote?.type === "pdf" || currentNote?.fileUrl;
+  const isPdfNote = currentNote?.type === "pdf" || currentNote?.pdfFile?.fileUrl;
 
   return (
     <EditorProvider editor={editor} setEditor={setEditor}>
@@ -111,7 +108,7 @@ function Workspace() {
               )}
             </div>
             <div className="overflow-y-auto h-full">
-              <PdfViewer fileUrl={currentNote?.fileUrl} />
+              <PdfViewer fileUrl={currentNote?.pdfFile?.fileUrl} />
             </div>
           </div>
         ) : (

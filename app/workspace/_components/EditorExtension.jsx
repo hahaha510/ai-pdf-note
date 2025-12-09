@@ -37,40 +37,64 @@ function EditorExtension({ editor }) {
   }, []);
 
   const onAiClick = async () => {
-    toast("AI is getting your answer...");
+    toast("AI 正在思考你的问题...");
     const selectedText = editor.state.doc.textBetween(
       editor.state.selection.from,
       editor.state.selection.to,
       " "
     );
-    const result = await SearchAI({ query: selectedText, fileId: fileId });
-    const UnformattedAns = JSON.parse(result);
-    let AllUnformattedAns = "";
-    UnformattedAns &&
-      UnformattedAns.forEach((item) => {
-        AllUnformattedAns += item.pageContent;
-      });
-    const PROMPT =
-      "For question :" +
-      selectedText +
-      " and with the given content as answer:" +
-      "please give appropriate answer in HTML format. The answer content is:" +
-      AllUnformattedAns;
-    const AiModelResult = await chatSession.sendMessage(PROMPT);
-    const FinalAns = AiModelResult.response
-      .text()
-      .replace("```", "")
-      .replace("html", "")
-      .replace("```", "");
-    const AllText = editor.getHTML();
-    editor.commands.setContent(AllText + "<p> <strong>AI Answer:</strong> " + FinalAns + "</p>");
 
-    if (workspaceNote) {
-      await updateWorkspaceNote({
-        noteId: fileId,
-        content: editor.getHTML(),
-        plainContent: editor.getText(),
-      });
+    try {
+      const result = await SearchAI({ query: selectedText, fileId: fileId });
+      const UnformattedAns = JSON.parse(result);
+      let AllUnformattedAns = "";
+      UnformattedAns &&
+        UnformattedAns.forEach((item) => {
+          AllUnformattedAns += item.pageContent;
+        });
+      const PROMPT =
+        "For question :" +
+        selectedText +
+        " and with the given content as answer:" +
+        "please give appropriate answer in HTML format. The answer content is:" +
+        AllUnformattedAns;
+
+      // 使用流式输出
+      const AllText = editor.getHTML();
+      let streamedText = "";
+
+      // 先插入 AI 回答的标题
+      editor.commands.setContent(
+        AllText + "<p><strong>AI 回答:</strong> <span id='ai-answer-placeholder'></span></p>"
+      );
+
+      // 使用流式 API
+      const streamResult = await chatSession.sendMessageStream(PROMPT);
+
+      for await (const chunk of streamResult.stream) {
+        const chunkText = chunk.text();
+        streamedText += chunkText;
+
+        // 清理格式
+        const cleanText = streamedText.replace(/```html/g, "").replace(/```/g, "");
+
+        // 实时更新编辑器内容（打字机效果）
+        editor.commands.setContent(AllText + "<p><strong>AI 回答:</strong> " + cleanText + "</p>");
+      }
+
+      // 最终保存
+      if (workspaceNote) {
+        await updateWorkspaceNote({
+          noteId: fileId,
+          content: editor.getHTML(),
+          plainContent: editor.getText(),
+        });
+      }
+
+      toast.success("AI 回答完成！");
+    } catch (error) {
+      console.error("AI 回答失败:", error);
+      toast.error("AI 回答失败，请重试");
     }
   };
 

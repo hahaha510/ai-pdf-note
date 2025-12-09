@@ -225,7 +225,7 @@ function Dashboard() {
           <AIFeatures notes={displayNotes || []} />
           <Button onClick={() => setShowNewNoteDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            New Note
+            新建笔记
           </Button>
         </div>
       </div>
@@ -240,7 +240,7 @@ function Dashboard() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Search notes and PDFs..."
+                placeholder="搜索笔记和 PDF..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-32"
@@ -295,7 +295,7 @@ function Dashboard() {
             className="flex items-center gap-2"
           >
             <Filter className="w-4 h-4" />
-            Filter
+            筛选
             {(selectedTag || selectedCategory) && (
               <span className="ml-1 px-1.5 py-0.5 bg-blue-600 text-white text-xs rounded-full">
                 {(selectedTag ? 1 : 0) + (selectedCategory ? 1 : 0)}
@@ -311,21 +311,21 @@ function Dashboard() {
             size="sm"
             onClick={() => setViewMode("all")}
           >
-            All
+            全部
           </Button>
           <Button
             variant={viewMode === "pdf" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("pdf")}
           >
-            PDFs
+            PDF
           </Button>
           <Button
             variant={viewMode === "note" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("note")}
           >
-            Notes
+            笔记
           </Button>
         </div>
       </div>
@@ -333,22 +333,22 @@ function Dashboard() {
       {/* 活动的筛选标签 */}
       {(selectedTag || selectedCategory || searchQuery) && (
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm text-gray-600">Active filters:</span>
+          <span className="text-sm text-gray-600">当前筛选:</span>
           {searchQuery && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-              Search: {searchQuery}
+              搜索: {searchQuery}
               <X className="w-4 h-4 ml-2 cursor-pointer" onClick={() => setSearchQuery("")} />
             </span>
           )}
           {selectedTag && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-              Tag: {selectedTag}
+              标签: {selectedTag}
               <X className="w-4 h-4 ml-2 cursor-pointer" onClick={() => setSelectedTag(null)} />
             </span>
           )}
           {selectedCategory && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-              Category: {selectedCategory}
+              分类: {selectedCategory}
               <X
                 className="w-4 h-4 ml-2 cursor-pointer"
                 onClick={() => setSelectedCategory(null)}
@@ -445,15 +445,15 @@ function Dashboard() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FileText className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">暂无内容</h3>
             <p className="text-gray-600 mb-6">
               {searchQuery || selectedTag || selectedCategory
-                ? "Try adjusting your filters or search query"
-                : "Create your first note or upload a PDF to get started"}
+                ? "试试调整筛选条件或搜索关键词"
+                : "创建你的第一个笔记或上传 PDF 文件"}
             </p>
             <Button onClick={() => setShowNewNoteDialog(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Create Note
+              创建笔记
             </Button>
           </div>
         )}

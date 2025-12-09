@@ -63,8 +63,8 @@ function SiderBar() {
       {!isUpgrade && (
         <div className="absolute bottom-24 w-[80%]">
           <Progress value={(fileList?.length / 5) * 100} />
-          <p className="text-sm mt-1">{fileList?.length} out of 5 Pdf Uploaded</p>
-          <p className="text-sm text-gray-500 mt-2">Upgrade to Upload more PDF</p>
+          <p className="text-sm mt-1">已上传 {fileList?.length} / 5 个 PDF</p>
+          <p className="text-sm text-gray-500 mt-2">升级以上传更多 PDF 文件</p>
         </div>
       )}
     </div>
