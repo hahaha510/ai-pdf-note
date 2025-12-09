@@ -27,9 +27,7 @@ function WorkspaceHeader({ fileName, noteId, user, noteType, noteData }) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const { isOnline } = useNetworkStatus();
 
-  // 旧的保存方法（兼容 PDF）
-  const saveNotes = useMutation(api.notes.AddNotes);
-  // 新的保存方法
+  // 保存笔记方法
   const updateNote = useMutation(api.workspaceNotes.updateNote);
 
   useEffect(() => {
@@ -95,22 +93,6 @@ function WorkspaceHeader({ fileName, noteId, user, noteType, noteData }) {
               setAutoSaved(true);
               setTimeout(() => setAutoSaved(false), 2000);
             }
-          } else {
-            // 兼容旧的保存方式
-            await saveNotes({
-              fileId: noteId,
-              notes: content,
-              createdBy: user.userName || "",
-            });
-
-            // 删除草稿
-            if (noteId) {
-              await offlineStorage.deleteDraft(noteId);
-            }
-
-            if (!silent) {
-              toast.success("保存成功");
-            }
           }
         }
       } catch (error) {
@@ -145,19 +127,7 @@ function WorkspaceHeader({ fileName, noteId, user, noteType, noteData }) {
         setIsSaving(false);
       }
     },
-    [
-      editor,
-      user,
-      noteData,
-      noteId,
-      updateNote,
-      saveNotes,
-      title,
-      tags,
-      category,
-      isOnline,
-      noteType,
-    ]
+    [editor, user, noteData, noteId, updateNote, title, tags, category, isOnline, noteType]
   );
 
   const handleAddTag = () => {

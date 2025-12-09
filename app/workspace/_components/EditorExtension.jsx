@@ -26,7 +26,6 @@ function EditorExtension({ editor }) {
   const [user, setUser] = useState(null);
   const { fileId } = useParams();
   const SearchAI = useAction(api.myAction.search);
-  const saveNotes = useMutation(api.notes.AddNotes);
   const updateWorkspaceNote = useMutation(api.workspaceNotes.updateNote);
   const workspaceNote = useQuery(api.workspaceNotes.getNote, fileId ? { noteId: fileId } : "skip");
 
@@ -72,8 +71,6 @@ function EditorExtension({ editor }) {
         content: editor.getHTML(),
         plainContent: editor.getText(),
       });
-    } else {
-      saveNotes({ fileId: fileId, notes: editor.getHTML(), createdBy: user?.userName || "" });
     }
   };
 

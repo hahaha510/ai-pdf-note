@@ -8,29 +8,36 @@ import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
 import Strike from "@tiptap/extension-strike";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useEffect } from "react";
+import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 import { useEditorContext } from "./EditorContext";
 import { offlineStorage } from "../../../lib/offlineStorage";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 function TextEditior({ fileId }) {
-  // 尝试从新表获取笔记
+  // 从 workspaceNotes 表获取笔记
   const workspaceNote = useQuery(api.workspaceNotes.getNote, fileId ? { noteId: fileId } : "skip");
+  const updateNote = useMutation(api.workspaceNotes.updateNote);
 
-  // 兼容性：从旧表获取笔记
-  const legacyNotes = useQuery(
-    api.notes.GetNotes,
-    !workspaceNote && fileId ? { fileId: fileId } : "skip"
-  );
-
-  const notes = workspaceNote?.content || legacyNotes;
+  const notes = workspaceNote?.content;
   const { setEditor } = useEditorContext();
   const [hasDraft, setHasDraft] = useState(false);
   const [draftContent, setDraftContent] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isRestoringDraft, setIsRestoringDraft] = useState(false);
+  const lastSetContent = useRef(null);
   const { isOnline } = useNetworkStatus();
+
+  // 获取用户信息
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -118,10 +125,24 @@ function TextEditior({ fileId }) {
 
   // 加载笔记内容
   useEffect(() => {
-    if (notes && !hasDraft) {
-      editor && editor.commands.setContent(notes);
+    if (notes && !hasDraft && !isRestoringDraft && editor) {
+      // 检查编辑器当前内容，避免覆盖已编辑的内容
+      const currentContent = editor.getHTML().trim();
+      const normalizedNotes = notes.trim();
+      const normalizedLast = (lastSetContent.current || "").trim();
+
+      // 只在以下情况设置内容：
+      // 1. 编辑器为空
+      // 2. 内容与上次设置的不同，且与当前编辑器内容不同
+      if (
+        !currentContent ||
+        (normalizedNotes !== normalizedLast && normalizedNotes !== currentContent)
+      ) {
+        editor.commands.setContent(notes);
+        lastSetContent.current = notes;
+      }
     }
-  }, [notes, editor, hasDraft]);
+  }, [notes, editor, hasDraft, isRestoringDraft]);
 
   // 自动保存草稿（仅在离线时保存）
   useEffect(() => {
@@ -158,10 +179,47 @@ function TextEditior({ fileId }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
-  const handleRestoreDraft = () => {
+  const handleRestoreDraft = async () => {
     if (draftContent && editor) {
-      editor.commands.setContent(draftContent);
-      setHasDraft(false);
+      try {
+        // 1. 设置标志位，防止被其他 useEffect 覆盖
+        setIsRestoringDraft(true);
+        setHasDraft(false);
+
+        // 2. 设置编辑器内容并记录
+        editor.commands.setContent(draftContent);
+        lastSetContent.current = draftContent;
+
+        // 3. 如果在线，立即保存到服务器
+        if (isOnline && workspaceNote && user) {
+          // 临时创建一个 DOM 元素来提取纯文本
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = draftContent;
+          const plainContent = tempDiv.textContent || tempDiv.innerText || "";
+
+          await updateNote({
+            noteId: fileId,
+            content: draftContent,
+            plainContent: plainContent,
+          });
+          toast.success("草稿已恢复并保存到云端");
+
+          // 保存成功后，永久禁用自动加载（因为内容已经是最新的了）
+          // 不重置 isRestoringDraft，让用户继续编辑
+        } else {
+          toast.success("草稿已恢复（离线模式）");
+        }
+
+        // 4. 删除草稿
+        await offlineStorage.deleteDraft(fileId);
+
+        // 5. 保持标志位，防止后续自动加载
+        // 只有当用户刷新页面或重新进入笔记时才会重置
+      } catch (error) {
+        console.error("恢复草稿失败:", error);
+        toast.error("恢复草稿失败");
+        setIsRestoringDraft(false);
+      }
     }
   };
 
@@ -174,6 +232,42 @@ function TextEditior({ fileId }) {
       }
     }
   };
+
+  // 网络恢复后自动同步草稿
+  useEffect(() => {
+    const syncDraftOnReconnect = async () => {
+      if (!isOnline || !fileId || !editor || !workspaceNote || !user) return;
+
+      try {
+        const draft = await offlineStorage.getDraft(fileId);
+        if (draft && draft.content) {
+          // 网络恢复后，如果有草稿且内容不同于服务器，自动同步
+          const draftNormalized = draft.content.trim();
+          const notesNormalized = (notes || "").trim();
+
+          if (draftNormalized !== notesNormalized && draftNormalized.length > 0) {
+            console.log("网络恢复，自动同步草稿到服务器");
+            // 临时创建一个 DOM 元素来提取纯文本
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = draft.content;
+            const plainContent = tempDiv.textContent || tempDiv.innerText || "";
+
+            await updateNote({
+              noteId: fileId,
+              content: draft.content,
+              plainContent: plainContent,
+            });
+            await offlineStorage.deleteDraft(fileId);
+            toast.success("离线内容已自动同步到云端");
+          }
+        }
+      } catch (error) {
+        console.error("自动同步草稿失败:", error);
+      }
+    };
+
+    syncDraftOnReconnect();
+  }, [isOnline, fileId, editor, workspaceNote, notes, updateNote, user]);
 
   // 自动丢弃过期草稿（超过24小时）
   useEffect(() => {

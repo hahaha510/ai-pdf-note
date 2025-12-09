@@ -110,7 +110,21 @@ export const deleteNote = mutation({
       throw new Error("Note not found");
     }
 
+    // 删除 workspaceNotes 表的记录
     await ctx.db.delete(note._id);
+
+    // 如果是 PDF 笔记，同时删除 pdfFiles 表的记录
+    if (note.type === "pdf" && note.fileId) {
+      const pdfFile = await ctx.db
+        .query("pdfFiles")
+        .filter((q) => q.eq(q.field("fileId"), note.fileId))
+        .first();
+
+      if (pdfFile) {
+        await ctx.db.delete(pdfFile._id);
+      }
+    }
+
     return { success: true };
   },
 });

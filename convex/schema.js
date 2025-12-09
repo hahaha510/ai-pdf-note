@@ -25,11 +25,6 @@ export default defineSchema({
     vectorField: "embedding",
     dimensions: 768,
   }),
-  notes: defineTable({
-    fileId: v.string(),
-    notes: v.any(),
-    createdBy: v.string(),
-  }),
   // AI PDF Note 工作区笔记表 - 支持普通笔记和 PDF 笔记
   workspaceNotes: defineTable({
     noteId: v.string(), // 笔记 ID
@@ -62,7 +57,7 @@ export default defineSchema({
       filterFields: ["createdBy", "type"],
     }),
 
-  // 分享链接表
+  // 分享链接表 - 实现笔记分享功能
   shares: defineTable({
     noteId: v.string(), // 笔记 ID
     shareToken: v.string(), // 分享 token（8位随机字符）
@@ -79,7 +74,7 @@ export default defineSchema({
     .index("by_note", ["noteId"])
     .index("by_token", ["shareToken"]),
 
-  // 文档状态表（Y.js 状态）
+  // 文档状态表 - Y.js 实时协作状态（WebSocket 服务器使用）
   documentStates: defineTable({
     noteId: v.string(), // 笔记 ID
     yDocState: v.string(), // Y.js 文档状态（base64）
@@ -87,24 +82,4 @@ export default defineSchema({
     updatedAt: v.number(), // 更新时间
     updatedBy: v.string(), // 更新者
   }).index("by_note", ["noteId"]),
-
-  // 文档更新记录表
-  documentUpdates: defineTable({
-    noteId: v.string(), // 笔记 ID
-    update: v.string(), // Y.js 更新（base64）
-    userId: v.string(), // 用户 ID
-    userName: v.string(), // 用户名
-    timestamp: v.number(), // 时间戳
-  }).index("by_note_time", ["noteId", "timestamp"]),
-
-  // 用户在线状态表
-  userPresence: defineTable({
-    noteId: v.string(), // 笔记 ID
-    userId: v.string(), // 用户 ID
-    userName: v.string(), // 用户名
-    color: v.string(), // 光标颜色
-    lastSeen: v.number(), // 最后活跃时间
-  })
-    .index("by_note", ["noteId"])
-    .index("by_user", ["userId", "noteId"]),
 });
