@@ -7,7 +7,6 @@
     "websocket": "node server/websocket.mjs",
     "build": "next build",
     "start": "next start",
-    "start:production": "bash start.sh",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css}\"",

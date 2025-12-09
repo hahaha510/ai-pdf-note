@@ -119,25 +119,7 @@ npm run build
 npm start
 ```
 
-## � 部署到 Railway
-
-本项目已配置好 Railway 一键部署！
-
-### 快速部署
-
-1. Fork 或推送代码到 GitHub
-2. 访问 [Railway](https://railway.app/)
-3. 点击 "New Project" → "Deploy from GitHub repo"
-4. 选择你的仓库
-5. 添加环境变量：
-   - `NEXT_PUBLIC_CONVEX_URL`
-   - `CONVEX_DEPLOYMENT`
-   - `GOOGLE_AI_API_KEY`
-6. 等待部署完成！
-
-详细步骤请查看：[RAILWAY_FULL_DEPLOYMENT.md](./RAILWAY_FULL_DEPLOYMENT.md)
-
-## �📁 项目结构
+## 📁 项目结构
 
 ```
 ai-pdf-note/
