@@ -77,9 +77,14 @@
 # Convex
 NEXT_PUBLIC_CONVEX_URL=your_convex_deployment_url
 CONVEX_DEPLOYMENT=your_convex_deployment
-
 # Google AI
 GOOGLE_AI_API_KEY=your_google_ai_api_key
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+
+# WebSocket 用线上websocket需配置
+NEXT_PUBLIC_WEBSOCKET_URL=your_websocket_url
+# JWT
+JWT_SECRET=your_jwt_secret
 ```
 
 ### 安装依赖
@@ -119,37 +124,17 @@ npm run build
 npm start
 ```
 
-## 📁 项目结构
+## 🌐 在线部署
 
-```
-ai-pdf-note/
-├── app/                      # Next.js App Router
-│   ├── api/                  # API 路由
-│   │   ├── auth/            # 认证相关 API
-│   │   ├── ai-chat/         # AI 对话 API
-│   │   └── pdf-loader/      # PDF 加载 API
-│   ├── dashboard/           # 仪表板页面
-│   ├── workspace/           # 工作区（编辑器）
-│   ├── share/               # 分享页面
-│   ├── sign-in/             # 登录页面
-│   └── sign-up/             # 注册页面
-├── components/              # React 组件
-│   ├── ui/                  # shadcn/ui 组件
-│   └── ...                  # 自定义组件
-├── convex/                  # Convex 后端
-│   ├── schema.js            # 数据库 Schema
-│   ├── workspaceNotes.js    # 笔记相关函数
-│   ├── shares.js            # 分享相关函数
-│   ├── userPresence.js      # 用户在线状态
-│   └── ...                  # 其他 Convex 函数
-├── server/                  # WebSocket 服务器
-│   └── websocket.mjs        # Hocuspocus 服务器
-├── lib/                     # 工具函数
-│   ├── auth.js              # JWT 认证
-│   ├── db.js                # IndexedDB 操作
-│   └── syncManager.js       # 同步管理
-└── public/                  # 静态资源
-```
+### 主应用部署
+
+本项目已部署至：\*_[https://ai-pdf-note.vercel.app_]\*
+
+### WebSocket 服务部署
+
+WebSocket 协作服务已部署至：**[https://notes-websocket.onrender.com]**
+
+#
 
 ## 🎯 核心功能说明
 
