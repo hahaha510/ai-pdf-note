@@ -55,8 +55,11 @@ export function CollaborativeEditor({ fileId, user, permission = "edit", initial
     if (!fileId || !user || !editor) return;
 
     // 创建 Hocuspocus Provider
+    // 使用环境变量配置 WebSocket 地址，本地开发使用 localhost
+    const websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:1234";
+
     const hocuspocusProvider = new HocuspocusProvider({
-      url: "ws://localhost:1234",
+      url: websocketUrl,
       name: fileId,
       document: ydoc,
       token: user.email, // 用于认证
