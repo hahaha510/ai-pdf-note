@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Bold,
   Italic,
@@ -23,18 +23,10 @@ import { chatSession } from "../../configs/AIModel";
 import { toast } from "sonner";
 
 function EditorExtension({ editor }) {
-  const [user, setUser] = useState(null);
   const { fileId } = useParams();
   const SearchAI = useAction(api.myAction.search);
   const updateWorkspaceNote = useMutation(api.workspaceNotes.updateNote);
   const workspaceNote = useQuery(api.workspaceNotes.getNote, fileId ? { noteId: fileId } : "skip");
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, []);
 
   const onAiClick = async () => {
     toast("AI 正在思考你的问题...");
@@ -71,6 +63,47 @@ function EditorExtension({ editor }) {
       // 使用流式 API
       const streamResult = await chatSession.sendMessageStream(PROMPT);
 
+      // 检测 HTML 标签和 Markdown 语法是否完整的辅助函数
+      const hasIncompleteTag = (text) => {
+        // === HTML 标签检测 ===
+        const openTags = (text.match(/<[^/>][^>]*>/g) || []).length;
+        const closeTags = (text.match(/<\/[^>]+>/g) || []).length;
+        const hasOpeningBracket = text.lastIndexOf("<") > text.lastIndexOf(">");
+
+        // === Markdown 语法检测 ===
+        // 检测加粗 **
+        const boldMarkers = (text.match(/\*\*/g) || []).length;
+        const hasBoldIncomplete = boldMarkers % 2 !== 0;
+
+        // 检测斜体 * (排除 ** 中的 *)
+        // 移除所有 ** 后再统计单个 *
+        const textWithoutBold = text.replace(/\*\*/g, "");
+        const italicMarkers = (textWithoutBold.match(/\*/g) || []).length;
+        const hasItalicIncomplete = italicMarkers % 2 !== 0;
+
+        // 检测行内代码 `
+        const codeMarkers = (text.match(/`/g) || []).length;
+        const hasCodeIncomplete = codeMarkers % 2 !== 0;
+
+        // 检测链接 []() - 检测未闭合的方括号
+        const openBrackets = (text.match(/\[/g) || []).length;
+        const closeBrackets = (text.match(/\]/g) || []).length;
+        const hasLinkIncomplete = openBrackets !== closeBrackets;
+
+        return (
+          openTags !== closeTags ||
+          hasOpeningBracket ||
+          hasBoldIncomplete ||
+          hasItalicIncomplete ||
+          hasCodeIncomplete ||
+          hasLinkIncomplete
+        );
+      };
+
+      // RAF + 防抖变量
+      let rafId = null;
+      let pendingUpdate = null;
+
       for await (const chunk of streamResult.stream) {
         const chunkText = chunk.text();
         streamedText += chunkText;
@@ -78,8 +111,41 @@ function EditorExtension({ editor }) {
         // 清理格式
         const cleanText = streamedText.replace(/```html/g, "").replace(/```/g, "");
 
-        // 实时更新编辑器内容（打字机效果）
-        editor.commands.setContent(AllText + "<p><strong>AI 回答:</strong> " + cleanText + "</p>");
+        // 检测是否有未闭合的标签，如果有则暂时不渲染最后不完整的部分
+        let renderText = cleanText;
+        if (hasIncompleteTag(cleanText)) {
+          // 找到最后一个完整标签的位置
+          const lastCompleteTagIndex = cleanText.lastIndexOf(">");
+          if (lastCompleteTagIndex > 0) {
+            renderText =
+              cleanText.substring(0, lastCompleteTagIndex + 1) +
+              '<span class="cursor-blink">▋</span>';
+          }
+        }
+
+        // 保存待更新的内容
+        pendingUpdate = renderText;
+
+        // 取消之前的 RAF，避免重复渲染
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+        }
+
+        // 使用 RAF 确保在下一帧渲染（防抖）
+        rafId = requestAnimationFrame(() => {
+          editor.commands.setContent(
+            AllText + "<p><strong>AI 回答:</strong> " + pendingUpdate + "</p>"
+          );
+          rafId = null;
+        });
+      }
+
+      // 确保最后一次更新被执行
+      if (pendingUpdate && rafId) {
+        cancelAnimationFrame(rafId);
+        editor.commands.setContent(
+          AllText + "<p><strong>AI 回答:</strong> " + pendingUpdate + "</p>"
+        );
       }
 
       // 最终保存
